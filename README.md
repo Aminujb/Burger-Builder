@@ -1,0 +1,1 @@
+This project was modeled after the burger project on Udemy (https://www.udemy.com/course/react-the-complete-guide-incl-redux/)
