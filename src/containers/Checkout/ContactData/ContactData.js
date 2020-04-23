@@ -1,10 +1,10 @@
 import React, { Component} from 'react'
+import { connect } from 'react-redux'
 import Button from '../../../components/UI/Button/Button'
 import classes from './ContactData.css'
 import axios from '../../../axios-orders'
 import Spinner from '../../../components/UI/Spinner/Spinner'
 import Input from '../../../components/Input/Input'
-
 
 class ContactData extends Component{
     
@@ -48,11 +48,12 @@ class ContactData extends Component{
                 validation:{
                     required: true,
                     minLength: 5,
-                    maxLength: 5
+                    maxLength: 5,
+                    isNumeric: true
                 },
                 valid : false,
                 touched : false,
-                errorMessage: 'Invalid length'
+                errorMessage: 'Invalid input'
             },
             country: {
                 elementType: 'input',
@@ -76,11 +77,12 @@ class ContactData extends Component{
                 },
                 value:'',
                 validation:{
-                    required: true
+                    required: true,
+                    isEmail: true
                 },
                 valid : false,
                 touched : false,
-                errorMessage: 'Email can not be blank'
+                errorMessage: 'Invalid Email format'
             },
             deliveryMethod: {
                 elementType: 'select',
@@ -107,8 +109,8 @@ class ContactData extends Component{
             formData[formElementId] = this.state.orderForm[formElementId].value
         }
         const purchseOrder = {
-            ingredients: this.props.ingredients,
-            price: this.props.price,
+            ingredients: this.props.ings,
+            price: this.props.t_price.toFixed(2),
             orderData: formData         
         }
         axios.post('/orders.json', purchseOrder)
@@ -136,6 +138,16 @@ class ContactData extends Component{
 
         if (rules.maxLength){
             isValid = value.length <= rules.maxLength && isValid
+        }
+
+        if (rules.isEmail) {
+            const pattern = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
+            isValid = pattern.test(value) && isValid
+        }
+
+        if (rules.isNumeric) {
+            const pattern = /^\d+$/;
+            isValid = pattern.test(value) && isValid
         }
 
         return isValid
@@ -199,4 +211,11 @@ class ContactData extends Component{
     }
 }
 
-export default ContactData
+const mapStateToProps = state => {
+    return {
+        ings: state.ingredients,
+        t_price: state.totalPrice
+    }
+}
+
+export default connect(mapStateToProps)(ContactData)
