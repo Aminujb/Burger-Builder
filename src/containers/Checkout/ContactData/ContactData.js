@@ -110,10 +110,11 @@ class ContactData extends Component{
         const purchaseOrder = {
             ingredients: this.props.ings,
             price: this.props.t_price.toFixed(2),
-            orderData: formData         
+            orderData: formData,
+            userId: this.props.userId         
         }
         
-        this.props.onOrderBurger(purchaseOrder)
+        this.props.onOrderBurger(purchaseOrder, this.props.token)
     }
 
     checkValidity(value, rules){
@@ -168,12 +169,12 @@ class ContactData extends Component{
 
     render(){
         const formElementArray =  [];
-        for (let key in this.state.orderForm)(
+        for (let key in this.state.orderForm){
             formElementArray.push({
                 id: key,
                 config: this.state.orderForm[key]
             })
-        )
+        }
         let form = (            
                 <form onSubmit={this.orderHandler} >
                     {formElementArray.map(formElement => (
@@ -209,13 +210,15 @@ const mapStateToProps = state => {
     return {
         ings: state.burgerBuilder.ingredients,
         t_price: state.burgerBuilder.totalPrice,
-        loading: state.order.loading
+        loading: state.order.loading,
+        token: state.auth.token,
+        userId: state.auth.userId
     }
 }
 
 const mapDispatchToProps = dispatch => {
     return {
-        onOrderBurger: (orderData) => dispatch(actions.purchaseBurger(orderData))
+        onOrderBurger: (orderData, token) => dispatch(actions.purchaseBurger(orderData, token))
     }
 }
 export default connect(mapStateToProps, mapDispatchToProps)(withErrorHandler(ContactData, axios))
