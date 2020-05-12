@@ -1,4 +1,4 @@
-import React, { Component} from 'react'
+import React, { useState} from 'react'
 import { connect } from 'react-redux'
 import Button from '../../../components/UI/Button/Button'
 import classes from './ContactData.css'
@@ -9,10 +9,9 @@ import withErrorHandler from '../../../hoc/withErrorHandler/withErrorHandler'
 import * as actions from '../../../store/actions/index'
 import {checkValidity} from '../../../shared/utility'
 
-class ContactData extends Component{
+const contactData = props => {
     
-    state = {
-        orderForm: {
+    const [orderForm, setOrderForm] = useState({
             name: {
                 elementType: 'input',
                 elementConfig: {
@@ -99,29 +98,30 @@ class ContactData extends Component{
                 valid: true,
                 validation: {}
             }
-        },
-        formIsValid: false
-    }
+        })
 
-    orderHandler = (event) => {
+        const [formIsValid, setFormIsValid] = useState(false)
+
+
+    const orderHandler = (event) => {
         event.preventDefault();
         const formData = {}
-        for (let formElementId in this.state.orderForm){
-            formData[formElementId] = this.state.orderForm[formElementId].value
+        for (let formElementId in orderForm){
+            formData[formElementId] = orderForm[formElementId].value
         }
         const purchaseOrder = {
-            ingredients: this.props.ings,
-            price: this.props.t_price.toFixed(2),
+            ingredients: props.ings,
+            price: props.t_price.toFixed(2),
             orderData: formData,
-            userId: this.props.userId         
+            userId: props.userId         
         }
         
-        this.props.onOrderBurger(purchaseOrder, this.props.token)
+        props.onOrderBurger(purchaseOrder, props.token)
     }
     
-    inputChangedHandler = (event, inputIdentifier) =>{
+    const inputChangedHandler = (event, inputIdentifier) =>{
         const updatedOrderForm = {
-            ...this.state.orderForm
+            ...orderForm
         }
         const updatedFormElement = {
             ...updatedOrderForm[inputIdentifier]
@@ -135,46 +135,45 @@ class ContactData extends Component{
         for (let inputIdentifier in updatedOrderForm){
             formIsValid = updatedOrderForm[inputIdentifier].valid && formIsValid  
         }
-        this.setState({orderForm:updatedOrderForm, formIsValid: formIsValid})
+        setOrderForm(updatedOrderForm)
+        setFormIsValid(formIsValid)
     }
-
-    render(){
-        const formElementArray =  [];
-        for (let key in this.state.orderForm){
-            formElementArray.push({
-                id: key,
-                config: this.state.orderForm[key]
-            })
-        }
-        let form = (            
-                <form onSubmit={this.orderHandler} >
-                    {formElementArray.map(formElement => (
-                        <Input 
-                            key= {formElement.id}
-                            elementType={formElement.config.elementType}
-                            elementConfig={formElement.config.elementConfig}
-                            value={formElement.config.value}
-                            invalid={!formElement.config.valid}
-                            shouldValidate={formElement.config.validation}
-                            touched={formElement.config.touched}
-                            errorMessage={formElement.config.errorMessage}
-                            changed={(event)=>this.inputChangedHandler(event,formElement.id)}
-                        />
-                    ))}
-                    <Button btnType="Success" disabled={!this.state.formIsValid}>ORDER</Button>
-                </form>
-            )
-
-        if (this.props.loading){
-            form = <Spinner/>
-        }
-        return (
-            <div className={classes.ContactData}>
-                <h4>Enter your Contact Data</h4>
-                {form}
-            </div>
-        );
+ 
+    const formElementArray =  [];
+    for (let key in orderForm){
+        formElementArray.push({
+            id: key,
+            config: orderForm[key]
+        })
     }
+    let form = (            
+            <form onSubmit={orderHandler} >
+                {formElementArray.map(formElement => (
+                    <Input 
+                        key= {formElement.id}
+                        elementType={formElement.config.elementType}
+                        elementConfig={formElement.config.elementConfig}
+                        value={formElement.config.value}
+                        invalid={!formElement.config.valid}
+                        shouldValidate={formElement.config.validation}
+                        touched={formElement.config.touched}
+                        errorMessage={formElement.config.errorMessage}
+                        changed={(event)=>inputChangedHandler(event,formElement.id)}
+                    />
+                ))}
+                <Button btnType="Success" disabled={!formIsValid}>ORDER</Button>
+            </form>
+        )
+
+    if (props.loading){
+        form = <Spinner/>
+    }
+    return (
+        <div className={classes.ContactData}>
+            <h4>Enter your Contact Data</h4>
+            {form}
+        </div>
+    );
 }
 
 const mapStateToProps = state => {
@@ -192,4 +191,4 @@ const mapDispatchToProps = dispatch => {
         onOrderBurger: (orderData, token) => dispatch(actions.purchaseBurger(orderData, token))
     }
 }
-export default connect(mapStateToProps, mapDispatchToProps)(withErrorHandler(ContactData, axios))
+export default connect(mapStateToProps, mapDispatchToProps)(withErrorHandler(contactData, axios))
